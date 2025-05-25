@@ -1,0 +1,1447 @@
+schema {
+  query: Query
+  mutation: Mutation
+  subscription: Subscription
+}
+
+interface Error {
+  message: String!
+}
+
+type Address {
+  "Optional: The postal code of the site."
+  postalCode: String
+  "Optional: The city where the site is located."
+  city: String
+  "Optional: The street address of the site."
+  street: String
+  "Optional: The country code of where the site is located. For example SE or DE."
+  countryCode: String
+}
+
+type AssetNotFoundError implements Error {
+  message: String!
+}
+
+"Represents a machine brand."
+type Brand {
+  "Required: The unique code for the brand."
+  code: String!
+  "Required: The name of the brand."
+  name: String!
+}
+
+"A connection to a list of items."
+type BrandsConnection {
+  "Information to aid in pagination."
+  pageInfo: PageInfo!
+  "A list of edges."
+  edges: [BrandsEdge!]
+  "A flattened list of the nodes."
+  nodes: [Brand!]
+  "Identifies the total count of items in the connection."
+  totalCount: Int! @cost(weight: "10")
+}
+
+"An edge in a connection."
+type BrandsEdge {
+  "A cursor for use in pagination."
+  cursor: String!
+  "The item at the end of the edge."
+  node: Brand!
+}
+
+"A connection to a list of items."
+type ChildDepartmentsConnection {
+  "Information to aid in pagination."
+  pageInfo: PageInfo!
+  "A list of edges."
+  edges: [ChildDepartmentsEdge!]
+  "A flattened list of the nodes."
+  nodes: [Department!]
+  "Identifies the total count of items in the connection."
+  totalCount: Int! @cost(weight: "10")
+}
+
+"An edge in a connection."
+type ChildDepartmentsEdge {
+  "A cursor for use in pagination."
+  cursor: String!
+  "The item at the end of the edge."
+  node: Department!
+}
+
+type CreateCustomerPayload {
+  customer: Customer
+  errors: [CreateCustomerError!]
+}
+
+type CreateCustomersPayload {
+  customers: [Customer!]
+  errors: [CreateCustomersError!]
+}
+
+type CreateDepartmentPayload {
+  department: Department
+  errors: [CreateDepartmentError!]
+}
+
+type CreateDepartmentsPayload {
+  departments: [Department!]
+  errors: [CreateDepartmentsError!]
+}
+
+type CreateMachinePayload {
+  machine: Machine
+  errors: [CreateMachineError!]
+}
+
+type CreateMachinesPayload {
+  machines: [Machine!]
+  errors: [CreateMachinesError!]
+}
+
+type CreateSitePayload {
+  site: Site
+  errors: [CreateSiteError!]
+}
+
+type CreateSitesPayload {
+  sites: [Site!]
+  errors: [CreateSitesError!]
+}
+
+"Represents a customer entity that may have one or more connected warehouse sites, with attributes such as unique identifiers, department association, and optional ERP system identifiers."
+type Customer {
+  "Required: A unique identifier for the department."
+  departmentId: UUID!
+  "Required: The name of the customer."
+  name: String!
+  "The unique identifier of the customer."
+  id: UUID!
+  "Optional: A unique identifier of the customer in the ERP system."
+  erpId: String
+  department(where: DepartmentFilterInput @cost(weight: "10")): Department @cost(weight: "10")
+  sites("Returns the first _n_ elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last _n_ elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String where: SiteFilterInput @cost(weight: "10")): SitesConnection @listSize(assumedSize: 100, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 20, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
+}
+
+"A connection to a list of items."
+type CustomersConnection {
+  "Information to aid in pagination."
+  pageInfo: PageInfo!
+  "A list of edges."
+  edges: [CustomersEdge!]
+  "A flattened list of the nodes."
+  nodes: [Customer!]
+  "Identifies the total count of items in the connection."
+  totalCount: Int! @cost(weight: "10")
+}
+
+"An edge in a connection."
+type CustomersEdge {
+  "A cursor for use in pagination."
+  cursor: String!
+  "The item at the end of the edge."
+  node: Customer!
+}
+
+"Data Handling Unit"
+type DataHandlingUnit {
+  "Optional: The serial number of the device, which is a unique identifier assigned to each individual unit and is represented as an string."
+  serialNumber: String!
+  "Required: The DhuType enumeration represents different types of DHU devices, including Dhu1, Dhu2, Dhu2Plus, Dhu3, and Dhu4."
+  type: DhuType!
+  "Required: The International Mobile Subscriber Identity (IMSI) is a unique number associated with all GSM and UMTS network mobile phone users."
+  imsi: String!
+  "Required: The International Mobile Equipment Identity (IMEI) is a number, usually unique, to identify 3GPP and iDEN mobile phones, as well as some satellite phones."
+  imei: String!
+  "Required: The hardware part number, which consists of a base number (e.g., 7556555) followed by a hyphen and a three-digit extension (e.g., 001)."
+  hardwarePartNumber: String!
+  "Optional: The FirmwareNumber of the device, represented as an string."
+  firmwareNumber: String!
+  "Optional: Indicates whether the modem is currently turned on in the DHU."
+  isModemOn: Boolean!
+  "Optional: Indicates whether the communication is currently turned on in the DHU. DHU is still listening for communication."
+  isCommunicationOn: Boolean!
+}
+
+"A department within an organization."
+type Department {
+  "Required: The type of the department."
+  type: DepartmentType!
+  parentId: UUID
+  "Required: The name of the department."
+  name: String!
+  "Required: The country code of where the department is located. For example SE or DE."
+  countryCode: String!
+  "The unique identifier of the department."
+  id: UUID!
+  "Optional: A unique identifier of the department in the ERP system."
+  erpId: String
+  parentDepartment(where: DepartmentFilterInput @cost(weight: "10")): Department @cost(weight: "10")
+  childDepartments("Returns the first _n_ elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last _n_ elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String where: DepartmentFilterInput @cost(weight: "10")): ChildDepartmentsConnection @listSize(assumedSize: 100, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 20, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
+  customers("Returns the first _n_ elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last _n_ elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String where: CustomerFilterInput @cost(weight: "10")): CustomersConnection @listSize(assumedSize: 100, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 20, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
+}
+
+"A connection to a list of items."
+type DepartmentsConnection {
+  "Information to aid in pagination."
+  pageInfo: PageInfo!
+  "A list of edges."
+  edges: [DepartmentsEdge!]
+  "A flattened list of the nodes."
+  nodes: [Department!]
+  "Identifies the total count of items in the connection."
+  totalCount: Int! @cost(weight: "10")
+}
+
+"An edge in a connection."
+type DepartmentsEdge {
+  "A cursor for use in pagination."
+  cursor: String!
+  "The item at the end of the edge."
+  node: Department!
+}
+
+type HeightPreSelect {
+  "The status of the HPS job."
+  status: HeightPreSelectStatus!
+  "The minimum height the HPS should guide to, at the location. For a deposit job type, this will be the height to which HPS will lower the forks when depositing the material (second phase of the HPS sequence). For a pickup job type, this will be the height to which HPS will move the forks on approach to the location (first phase of the HPS sequence)."
+  minHeight: Int!
+  "The maximum height the HPS should guide to, at the location. For a deposit job type, this will be the height to which HPS will move the forks on approach to the location (first phase of the HPS sequence). For a pickup job type, this will be the height to which HPS will raise the forks when picking up the material (second phase of the HPS sequence)."
+  maxHeight: Int!
+  "The type of HPS job. Will provide hints to the HPS behavior of the machine"
+  type: HeightPreSelectJobType!
+}
+
+type ISiteContract {
+  "Required: The ERP ID associated with the rental contract, used to uniquely identify the contract within the ERP system."
+  erpId: String!
+  "Required: The plan (Basic or Explorer) associated with the I_Site contract."
+  contractPlan: ContractPlanType!
+  "Required: The ID of the customer or department that is responsible for paying the I_Site contract."
+  paidById: UUID!
+  "Required: The type of entity(customer or department) that is responsible for paying the I_Site contract."
+  paidByType: PayerOfType!
+  "Required: The start date for the I_Site contract period, indicating when the contract begins."
+  startDate: DateTime!
+  "Required: The end date for the I_Site contract period, indicating when the contract ends."
+  endDate: DateTime!
+}
+
+"Represents a machine with various attributes such as unique identifiers, serial number, communication details, metrics, settings, and ownership information."
+type Machine {
+  "Required: The serial number of the machine. It must be unique within the I_site."
+  serialNumber: String!
+  "Optional: The TcsPackageVersion, which consists of a base number (e.g., 1234567) followed by a hyphen and a three-digit extension (e.g., 001)."
+  tcsPackageVersion: String
+  "The timestamp of the machine's last communication, in UTC."
+  latestCommunication: DateTime
+  "Optional: Holds the latest metrics from the machine. This property is updated automatically by the machine."
+  latestMetrics: MachineMetricsModel
+  """
+  Optional: The type of machine, represented by a predefined set of codes. The FamilyCode indicates the machine family and must be one of the following predefined codes:
+  Cbi - CB IC
+  Cbe - CB Electric
+  Sta - Stackers
+  Pic - Order Pickers
+  Vna - VNA Trucks
+  Rea - Reach Trucks
+  Low - Low Lifters
+  Tow - Tow Tractors
+  Han - Hand Pallet Trucks
+  Oth - Other equipment
+  """
+  familyCode: FamilyCode
+  "Optional: Settings for automatic Height Pre-Select (HPS). This function allows setting a defined stop height before lifting or lowering, making the forks stop at the defined height automatically."
+  heightPreSelect: HeightPreSelect
+  "Optional: Indicates whether the Operator should be included in the data sent from DHU to the cloud."
+  includeOperatorInActivities: Boolean
+  "Optional: The name of the machine. If the Name is not provided, the SerialNumber will be used instead."
+  name: String
+  "The brand of the machine, represented by a pre-defined code. The code needs to match an existing Brands code in I_site."
+  brand: Brand
+  "The model of the machine. This property specifies the machine's model name."
+  model: String
+  "Represents the unique identifier for the site."
+  siteId: UUID!
+  "Indicates whether the machine is active in the ERP system. This is a boolean value used by ERP to determine the machine's status."
+  status: Boolean!
+  "Optional: The Data Handling Unit (DHU) associated with this entity. By default, this is set to false. It should be updated by I_site."
+  dhu: DataHandlingUnit
+  "Optional: The type of energy used by the machine. This indicates whether the machine uses (Diesel), (Electric), (LPGPetrol,), or if the energy type is not available(NotAvailable)."
+  energy: Energy
+  "Optional: The customer-assigned name for the machine."
+  fleetNo: String
+  "Optional: The year model of the machine. If not specified, this can be null. However, if the year model is not set or is negative, it is considered as -1."
+  yearModel: Int
+  "Optional: The lift capacity of the machine. If not specified, this can be null. However, if the lift capacity is not set or is negative, it is considered as -1."
+  liftCapacity: Int
+  "Optional: The type of ownership for the machine. This indicates whether the machine is owned by others(OTHERS), rented for a short term(SHORT_TERM_RENTAL), rented for a long term (LONG_TERM_RENTAL), owned by a customer(CUSTOMER_OWNED), or used as a demo (DEMO)."
+  typeOfOwnership: TypeOfOwnership
+  "Optional: The contract associated with TypeOfOwnership set to LongTermRental, providing detailed terms and conditions. If TypeOfOwnership is not LongTermRental, this should be null."
+  rentalContract: RentalContract
+  "The timestamp of the most recent modification to the machine document."
+  lastUpdatedUtc: DateTime
+  "Optional: Details the customer's I_Site subscription, including the plan (Basic or Explorer), purchaser information, and an ERP system contract ID for traceability."
+  iSiteContract: ISiteContract
+  "The unique identifier of the machine."
+  id: UUID!
+  "Optional: A unique identifier of the machine in the ERP system."
+  erpId: String
+  site(where: SiteFilterInput @cost(weight: "10")): Site @cost(weight: "10")
+}
+
+type MachineMetricsModel {
+  "A-time (Key-On): The total hours the truck’s starter key is switched to the on position."
+  aHours: Long!
+  "B-time (Driving, Lifting or other Hydraulics): The total hours any of the truck’s motors (including steering servo) are active."
+  bHours: Long!
+  "C-time (Driving): The total hours the truck has been driven."
+  cHours: Long!
+  "D-time (Lifting): The total hours the truck's lift motor has been active."
+  dHours: Long!
+  "E-time (Ergo\/Initial\/T-Mote): Used for different purposes on different machines—RRE: Ergo cabin tilt active hours, VCE: Initial lift active hours, OSE: T-Mote active hours."
+  eHours: Long!
+  "F-time (Operator presence\/availability time): The total hours the truck operator is present."
+  fHours: Long!
+  "S-time (Service): Time remaining until the next service. Can be negative if service is overdue."
+  sHours: Long!
+}
+
+type MachineUpdateError {
+  message: String!
+}
+
+"A connection to a list of items."
+type MachinesConnection {
+  "Information to aid in pagination."
+  pageInfo: PageInfo!
+  "A list of edges."
+  edges: [MachinesEdge!]
+  "A flattened list of the nodes."
+  nodes: [Machine!]
+  "Identifies the total count of items in the connection."
+  totalCount: Int! @cost(weight: "10")
+}
+
+"An edge in a connection."
+type MachinesEdge {
+  "A cursor for use in pagination."
+  cursor: String!
+  "The item at the end of the edge."
+  node: Machine!
+}
+
+type Mutation @authorize {
+  "Create a new department."
+  createDepartment(input: CreateDepartmentInput!): CreateDepartmentPayload! @cost(weight: "10")
+  "Create a batch of departments."
+  createDepartments(input: CreateDepartmentsInput!): CreateDepartmentsPayload! @cost(weight: "10")
+  "Update an existing department."
+  updateDepartment(input: UpdateDepartmentInput!): UpdateDepartmentPayload! @cost(weight: "10")
+  "Update existing departments."
+  updateDepartments(input: UpdateDepartmentsInput!): UpdateDepartmentsPayload! @cost(weight: "10")
+  "Create a new customer."
+  createCustomer(input: CreateCustomerInput!): CreateCustomerPayload! @cost(weight: "10")
+  "Create a batch of customers."
+  createCustomers(input: CreateCustomersInput!): CreateCustomersPayload! @cost(weight: "10")
+  "Update an existing customer."
+  updateCustomer(input: UpdateCustomerInput!): UpdateCustomerPayload! @cost(weight: "10")
+  "Update a batch of customers."
+  updateCustomers(input: UpdateCustomersInput!): UpdateCustomersPayload! @cost(weight: "10")
+  "Create a new site."
+  createSite(input: CreateSiteInput!): CreateSitePayload! @cost(weight: "10")
+  "Create a batch of new site."
+  createSites(input: CreateSitesInput!): CreateSitesPayload! @cost(weight: "10")
+  "Update an existing site."
+  updateSite(input: UpdateSiteInput!): UpdateSitePayload! @cost(weight: "10")
+  "Update existing sites."
+  updateSites(input: UpdateSitesInput!): UpdateSitesPayload! @cost(weight: "10")
+  createMachine(input: CreateMachineInput!): CreateMachinePayload! @cost(weight: "10")
+  createMachines(input: CreateMachinesInput!): CreateMachinesPayload! @cost(weight: "10")
+  updateMachine(input: UpdateMachineInput!): UpdateMachinePayload! @cost(weight: "10")
+  updateMachines(input: UpdateMachinesInput!): UpdateMachinesPayload! @cost(weight: "10")
+  updateErpId(input: UpdateErpIdInput!): UpdateErpIdPayload! @cost(weight: "10")
+  "Set the Height Pre-Select settings for a machine."
+  setHps(input: SetHpsInput!): SetHpsPayload! @cost(weight: "10")
+}
+
+type NotAllowedError implements Error {
+  message: String!
+}
+
+type OperationFailedError implements Error {
+  message: String!
+}
+
+"Information about pagination in a connection."
+type PageInfo {
+  "Indicates whether more edges exist following the set defined by the clients arguments."
+  hasNextPage: Boolean!
+  "Indicates whether more edges exist prior the set defined by the clients arguments."
+  hasPreviousPage: Boolean!
+  "When paginating backwards, the cursor to continue."
+  startCursor: String
+  "When paginating forwards, the cursor to continue."
+  endCursor: String
+}
+
+type Query @authorize {
+  departments("Returns the first _n_ elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last _n_ elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String order: [DepartmentSortInput!] @cost(weight: "10") where: DepartmentFilterInput @cost(weight: "10")): DepartmentsConnection @listSize(assumedSize: 500, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 20, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
+  customers("Returns the first _n_ elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last _n_ elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String order: [CustomerSortInput!] @cost(weight: "10") where: CustomerFilterInput @cost(weight: "10")): CustomersConnection @listSize(assumedSize: 500, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 20, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
+  sites("Returns the first _n_ elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last _n_ elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String order: [SiteSortInput!] @cost(weight: "10") where: SiteFilterInput @cost(weight: "10")): SitesConnection @listSize(assumedSize: 500, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 20, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
+  machines("Returns the first _n_ elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last _n_ elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String order: [MachineSortInput!] @cost(weight: "10") where: MachineFilterInput @cost(weight: "10")): MachinesConnection @listSize(assumedSize: 500, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 20, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
+  brands("Returns the first _n_ elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last _n_ elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String order: [BrandSortInput!] @cost(weight: "10") where: BrandFilterInput @cost(weight: "10")): BrandsConnection @listSize(assumedSize: 500, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 20, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
+}
+
+type RentalContract {
+  "Required: The ERP ID associated with the rental contract, used to uniquely identify the contract within the ERP system."
+  erpId: String!
+  "Required: The start date for the rental contract period, indicating when the rental agreement begins."
+  startDate: DateTime!
+  "Required: The end date for the rental contract period, indicating when the rental agreement ends."
+  endDate: DateTime!
+  "Required: The amount of hours the truck is expected to be used during the rental contract period."
+  quantity: Int!
+}
+
+type SetHpsPayload {
+  machine: Machine
+  errors: [SetHpsError!]
+}
+
+"Represents a specific warehouse site with various attributes such as unique identifiers, customer association, location details, and optional ERP system identifiers."
+type Site {
+  "Required: A unique identifier for the customer."
+  customerId: UUID!
+  "Optional: The site number, which is an optional identifier for the site."
+  siteNumber: String
+  "Required: The name of the site."
+  name: String!
+  "Optional: The postal address of a site."
+  address: Address
+  "Optional: The time zone of the site. For example, 'W. Europe Standard Time'."
+  timeZone: String
+  "The unique identifier of the site."
+  id: UUID!
+  "Optional: A unique identifier of the site in the ERP system."
+  erpId: String
+  customer(where: CustomerFilterInput @cost(weight: "10")): Customer @cost(weight: "10")
+  machines("Returns the first _n_ elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last _n_ elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String where: MachineFilterInput @cost(weight: "10")): MachinesConnection @listSize(assumedSize: 100, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 20, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
+}
+
+"A connection to a list of items."
+type SitesConnection {
+  "Information to aid in pagination."
+  pageInfo: PageInfo!
+  "A list of edges."
+  edges: [SitesEdge!]
+  "A flattened list of the nodes."
+  nodes: [Site!]
+  "Identifies the total count of items in the connection."
+  totalCount: Int! @cost(weight: "10")
+}
+
+"An edge in a connection."
+type SitesEdge {
+  "A cursor for use in pagination."
+  cursor: String!
+  "The item at the end of the edge."
+  node: Site!
+}
+
+type Subscription @authorize(policy: "MachineSubscriberPolicy", apply: VALIDATION) {
+  "Subscription for HPS changes on any machine."
+  machinesHpsSet: Machine!
+  "Subscription for HPS changes on a specific machine."
+  machineHpsSet(machineId: UUID!): Machine!
+  "Subscription for Dhu IsCommunicationOn changes on any machine."
+  machinesDhuIsCommunicationChanged: Machine!
+  "Subscription for Dhu IsCommunicationOn changes on a specific machine."
+  machineDhuIsCommunicationChanged(machineId: UUID!): Machine!
+  "Subscription for TCS package version changes on any machine."
+  machinesTcsPackageVersionChanged: Machine!
+  "Subscription for TCS package version changes on a specific machine."
+  machineTcsPackageVersionChanged(machineId: UUID!): Machine!
+  "Subscription for DHU firmware number changes on any machine."
+  machinesDhuFirmwareNumberChanged: Machine!
+  "Subscription for DHU firmware number changes on a specific machine."
+  machineDhuFirmwareNumberChanged(machineId: UUID!): Machine!
+  "Subscription for DHU serial number changes on any machine."
+  machinesDhuSerialNumberChanged: Machine!
+  "Subscription for DHU serial number changes on a specific machine."
+  machineDhuSerialNumberChanged(machineId: UUID!): Machine!
+  "Subscription for machine metrics changes on any machine."
+  machinesMetricsChanged: Machine!
+  "Subscription for machine metrics changes on a specific machine."
+  machineMetricsChanged(machineId: UUID!): Machine!
+  "Subscription for machine changes on any machine."
+  machineChanged: Machine!
+}
+
+type UpdateCustomerPayload {
+  customer: Customer
+  errors: [UpdateCustomerError!]
+}
+
+type UpdateCustomersPayload {
+  customers: [Customer!]
+  errors: [UpdateCustomersError!]
+}
+
+type UpdateDepartmentPayload {
+  department: Department
+  errors: [UpdateDepartmentError!]
+}
+
+type UpdateDepartmentsPayload {
+  departments: [Department!]
+  errors: [UpdateDepartmentsError!]
+}
+
+type UpdateErpIdPayload {
+  machine: Machine
+  errors: [UpdateErpIdError!]
+}
+
+type UpdateMachinePayload {
+  machine: Machine
+  errors: [UpdateMachineError!]
+}
+
+type UpdateMachinesPayload {
+  updatedMachines: [Machine!]!
+  machinesUpdateErrors: [MachineUpdateError!]!
+}
+
+type UpdateSitePayload {
+  site: Site
+  errors: [UpdateSiteError!]
+}
+
+type UpdateSitesPayload {
+  sites: [Site!]
+  errors: [UpdateSitesError!]
+}
+
+type ValidationError implements Error {
+  message: String!
+}
+
+union CreateCustomerError = NotAllowedError | ValidationError
+
+union CreateCustomersError = NotAllowedError | ValidationError
+
+union CreateDepartmentError = NotAllowedError | ValidationError
+
+union CreateDepartmentsError = NotAllowedError | ValidationError
+
+union CreateMachineError = NotAllowedError | AssetNotFoundError
+
+union CreateMachinesError = NotAllowedError | AssetNotFoundError
+
+union CreateSiteError = NotAllowedError | ValidationError
+
+union CreateSitesError = NotAllowedError | ValidationError
+
+union SetHpsError = NotAllowedError | AssetNotFoundError | OperationFailedError
+
+union UpdateCustomerError = NotAllowedError | AssetNotFoundError | ValidationError
+
+union UpdateCustomersError = NotAllowedError | AssetNotFoundError | ValidationError
+
+union UpdateDepartmentError = NotAllowedError | AssetNotFoundError | ValidationError
+
+union UpdateDepartmentsError = NotAllowedError | AssetNotFoundError | ValidationError
+
+union UpdateErpIdError = NotAllowedError | AssetNotFoundError
+
+union UpdateMachineError = NotAllowedError | AssetNotFoundError
+
+union UpdateSiteError = NotAllowedError | AssetNotFoundError | ValidationError
+
+union UpdateSitesError = NotAllowedError | AssetNotFoundError | ValidationError
+
+input AddressFilterInput {
+  and: [AddressFilterInput!]
+  or: [AddressFilterInput!]
+  "Optional: The postal code of the site."
+  postalCode: StringOperationFilterInput
+  "Optional: The city where the site is located."
+  city: StringOperationFilterInput
+  "Optional: The street address of the site."
+  street: StringOperationFilterInput
+  "Optional: The country code of where the site is located. For example SE or DE."
+  countryCode: StringOperationFilterInput
+}
+
+input AddressSortInput {
+  "Optional: The postal code of the site."
+  postalCode: SortEnumType @cost(weight: "10")
+  "Optional: The city where the site is located."
+  city: SortEnumType @cost(weight: "10")
+  "Optional: The street address of the site."
+  street: SortEnumType @cost(weight: "10")
+  "Optional: The country code of where the site is located. For example SE or DE."
+  countryCode: SortEnumType @cost(weight: "10")
+}
+
+input BooleanOperationFilterInput {
+  eq: Boolean @cost(weight: "10")
+  neq: Boolean @cost(weight: "10")
+}
+
+"Represents a machine brand."
+input BrandFilterInput {
+  and: [BrandFilterInput!]
+  or: [BrandFilterInput!]
+  "Required: The unique code for the brand."
+  code: StringOperationFilterInput
+  "Required: The name of the brand."
+  name: StringOperationFilterInput
+}
+
+"Represents a machine brand."
+input BrandSortInput {
+  "Required: The unique code for the brand."
+  code: SortEnumType @cost(weight: "10")
+  "Required: The name of the brand."
+  name: SortEnumType @cost(weight: "10")
+}
+
+input ContractPlanTypeOperationFilterInput {
+  eq: ContractPlanType @cost(weight: "10")
+  neq: ContractPlanType @cost(weight: "10")
+  in: [ContractPlanType!] @cost(weight: "10")
+  nin: [ContractPlanType!] @cost(weight: "10")
+}
+
+input CreateCustomerInput {
+  customer: CustomerCreateInput!
+}
+
+input CreateCustomersInput {
+  customers: [CustomerCreateInput!]!
+}
+
+input CreateDepartmentInput {
+  department: DepartmentCreateInput!
+}
+
+input CreateDepartmentsInput {
+  departments: [DepartmentCreateInput!]!
+}
+
+input CreateMachineInput {
+  machineCreate: MachineCreateInput!
+}
+
+input CreateMachinesInput {
+  machines: [MachineCreateInput!]!
+}
+
+input CreateSiteInput {
+  site: SiteCreateInput!
+}
+
+input CreateSitesInput {
+  sites: [SiteCreateInput!]!
+}
+
+input CustomerCreateInput {
+  departmentId: UUID!
+  erpId: String
+  name: String!
+}
+
+"Represents a customer entity that may have one or more connected warehouse sites, with attributes such as unique identifiers, department association, and optional ERP system identifiers."
+input CustomerFilterInput {
+  and: [CustomerFilterInput!]
+  or: [CustomerFilterInput!]
+  "Required: A unique identifier for the department."
+  departmentId: UuidOperationFilterInput
+  "Required: The name of the customer."
+  name: StringOperationFilterInput
+  "The unique identifier of the {className}."
+  id: UuidOperationFilterInput
+  "Optional: A unique identifier of the {className} in the ERP system."
+  erpId: StringOperationFilterInput
+}
+
+"Represents a customer entity that may have one or more connected warehouse sites, with attributes such as unique identifiers, department association, and optional ERP system identifiers."
+input CustomerSortInput {
+  "Required: A unique identifier for the department."
+  departmentId: SortEnumType @cost(weight: "10")
+  "Required: The name of the customer."
+  name: SortEnumType @cost(weight: "10")
+  "The unique identifier of the {className}."
+  id: SortEnumType @cost(weight: "10")
+  "Optional: A unique identifier of the {className} in the ERP system."
+  erpId: SortEnumType @cost(weight: "10")
+}
+
+input CustomerUpdateInput {
+  id: UUID!
+  erpId: String
+  name: String
+}
+
+"Data Handling Unit"
+input DataHandlingUnitFilterInput {
+  and: [DataHandlingUnitFilterInput!]
+  or: [DataHandlingUnitFilterInput!]
+  "Optional: The serial number of the device, which is a unique identifier assigned to each individual unit and is represented as an string."
+  serialNumber: StringOperationFilterInput
+  "Required: The DhuType enumeration represents different types of DHU devices, including Dhu1, Dhu2, Dhu2Plus, Dhu3, and Dhu4."
+  type: DhuTypeOperationFilterInput
+  "Required: The International Mobile Subscriber Identity (IMSI) is a unique number associated with all GSM and UMTS network mobile phone users."
+  imsi: StringOperationFilterInput
+  "Required: The International Mobile Equipment Identity (IMEI) is a number, usually unique, to identify 3GPP and iDEN mobile phones, as well as some satellite phones."
+  imei: StringOperationFilterInput
+  "Required: The hardware part number, which consists of a base number (e.g., 7556555) followed by a hyphen and a three-digit extension (e.g., 001)."
+  hardwarePartNumber: StringOperationFilterInput
+  "Optional: The FirmwareNumber of the device, represented as an string."
+  firmwareNumber: StringOperationFilterInput
+  "Optional: Indicates whether the modem is currently turned on in the DHU."
+  isModemOn: BooleanOperationFilterInput
+  "Optional: Indicates whether the communication is currently turned on in the DHU. DHU is still listening for communication."
+  isCommunicationOn: BooleanOperationFilterInput
+}
+
+"Data Handling Unit"
+input DataHandlingUnitSortInput {
+  "Optional: The serial number of the device, which is a unique identifier assigned to each individual unit and is represented as an string."
+  serialNumber: SortEnumType @cost(weight: "10")
+  "Required: The DhuType enumeration represents different types of DHU devices, including Dhu1, Dhu2, Dhu2Plus, Dhu3, and Dhu4."
+  type: SortEnumType @cost(weight: "10")
+  "Required: The International Mobile Subscriber Identity (IMSI) is a unique number associated with all GSM and UMTS network mobile phone users."
+  imsi: SortEnumType @cost(weight: "10")
+  "Required: The International Mobile Equipment Identity (IMEI) is a number, usually unique, to identify 3GPP and iDEN mobile phones, as well as some satellite phones."
+  imei: SortEnumType @cost(weight: "10")
+  "Required: The hardware part number, which consists of a base number (e.g., 7556555) followed by a hyphen and a three-digit extension (e.g., 001)."
+  hardwarePartNumber: SortEnumType @cost(weight: "10")
+  "Optional: The FirmwareNumber of the device, represented as an string."
+  firmwareNumber: SortEnumType @cost(weight: "10")
+  "Optional: Indicates whether the modem is currently turned on in the DHU."
+  isModemOn: SortEnumType @cost(weight: "10")
+  "Optional: Indicates whether the communication is currently turned on in the DHU. DHU is still listening for communication."
+  isCommunicationOn: SortEnumType @cost(weight: "10")
+}
+
+input DateTimeOperationFilterInput {
+  eq: DateTime @cost(weight: "10")
+  neq: DateTime @cost(weight: "10")
+  in: [DateTime] @cost(weight: "10")
+  nin: [DateTime] @cost(weight: "10")
+  gt: DateTime @cost(weight: "10")
+  ngt: DateTime @cost(weight: "10")
+  gte: DateTime @cost(weight: "10")
+  ngte: DateTime @cost(weight: "10")
+  lt: DateTime @cost(weight: "10")
+  nlt: DateTime @cost(weight: "10")
+  lte: DateTime @cost(weight: "10")
+  nlte: DateTime @cost(weight: "10")
+}
+
+input DepartmentCreateInput {
+  parentId: UUID
+  name: String!
+  erpId: String
+  type: DepartmentType!
+  countryCode: String!
+}
+
+"A department within an organization."
+input DepartmentFilterInput {
+  and: [DepartmentFilterInput!]
+  or: [DepartmentFilterInput!]
+  "Required: The type of the department."
+  type: DepartmentTypeOperationFilterInput
+  parentId: UuidOperationFilterInput
+  "Required: The name of the department."
+  name: StringOperationFilterInput
+  "Required: The country code of where the department is located. For example SE or DE."
+  countryCode: StringOperationFilterInput
+  "The unique identifier of the {className}."
+  id: UuidOperationFilterInput
+  "Optional: A unique identifier of the {className} in the ERP system."
+  erpId: StringOperationFilterInput
+}
+
+"A department within an organization."
+input DepartmentSortInput {
+  "Required: The type of the department."
+  type: SortEnumType @cost(weight: "10")
+  parentId: SortEnumType @cost(weight: "10")
+  "Required: The name of the department."
+  name: SortEnumType @cost(weight: "10")
+  "Required: The country code of where the department is located. For example SE or DE."
+  countryCode: SortEnumType @cost(weight: "10")
+  "The unique identifier of the {className}."
+  id: SortEnumType @cost(weight: "10")
+  "Optional: A unique identifier of the {className} in the ERP system."
+  erpId: SortEnumType @cost(weight: "10")
+}
+
+input DepartmentTypeOperationFilterInput {
+  eq: DepartmentType @cost(weight: "10")
+  neq: DepartmentType @cost(weight: "10")
+  in: [DepartmentType!] @cost(weight: "10")
+  nin: [DepartmentType!] @cost(weight: "10")
+}
+
+input DepartmentUpdateInput {
+  id: UUID!
+  name: String
+  erpId: String
+  countryCode: String
+}
+
+input DhuTypeOperationFilterInput {
+  eq: DhuType @cost(weight: "10")
+  neq: DhuType @cost(weight: "10")
+  in: [DhuType!] @cost(weight: "10")
+  nin: [DhuType!] @cost(weight: "10")
+}
+
+input HeightPreSelectFilterInput {
+  and: [HeightPreSelectFilterInput!]
+  or: [HeightPreSelectFilterInput!]
+  "The status of the HPS job."
+  status: HeightPreSelectStatusOperationFilterInput
+  "The minimum height the HPS should guide to, at the location. For a deposit job type, this will be the height to which HPS will lower the forks when depositing the material (second phase of the HPS sequence). For a pickup job type, this will be the height to which HPS will move the forks on approach to the location (first phase of the HPS sequence)."
+  minHeight: IntOperationFilterInput
+  "The maximum height the HPS should guide to, at the location. For a deposit job type, this will be the height to which HPS will move the forks on approach to the location (first phase of the HPS sequence). For a pickup job type, this will be the height to which HPS will raise the forks when picking up the material (second phase of the HPS sequence)."
+  maxHeight: IntOperationFilterInput
+  "The type of HPS job. Will provide hints to the HPS behavior of the machine"
+  type: HeightPreSelectJobTypeOperationFilterInput
+}
+
+input HeightPreSelectJobTypeOperationFilterInput {
+  eq: HeightPreSelectJobType @cost(weight: "10")
+  neq: HeightPreSelectJobType @cost(weight: "10")
+  in: [HeightPreSelectJobType!] @cost(weight: "10")
+  nin: [HeightPreSelectJobType!] @cost(weight: "10")
+}
+
+input HeightPreSelectSettingsInput {
+  "The minimum height the HPS should guide to, at the location. For a deposit job type, this will be the height to which HPS will lower the forks when depositing the material (second phase of the HPS sequence). For a pickup job type, this will be the height to which HPS will move the forks on approach to the location (first phase of the HPS sequence)."
+  minHeight: Int!
+  "The maximum height the HPS should guide to, at the location. For a deposit job type, this will be the height to which HPS will move the forks on approach to the location (first phase of the HPS sequence). For a pickup job type, this will be the height to which HPS will raise the forks when picking up the material (second phase of the HPS sequence)."
+  maxHeight: Int!
+  "The type of HPS job. Will provide hints to the HPS behavior of the machine"
+  type: HeightPreSelectJobType!
+}
+
+input HeightPreSelectSortInput {
+  "The status of the HPS job."
+  status: SortEnumType @cost(weight: "10")
+  "The minimum height the HPS should guide to, at the location. For a deposit job type, this will be the height to which HPS will lower the forks when depositing the material (second phase of the HPS sequence). For a pickup job type, this will be the height to which HPS will move the forks on approach to the location (first phase of the HPS sequence)."
+  minHeight: SortEnumType @cost(weight: "10")
+  "The maximum height the HPS should guide to, at the location. For a deposit job type, this will be the height to which HPS will move the forks on approach to the location (first phase of the HPS sequence). For a pickup job type, this will be the height to which HPS will raise the forks when picking up the material (second phase of the HPS sequence)."
+  maxHeight: SortEnumType @cost(weight: "10")
+  "The type of HPS job. Will provide hints to the HPS behavior of the machine"
+  type: SortEnumType @cost(weight: "10")
+}
+
+input HeightPreSelectStatusOperationFilterInput {
+  eq: HeightPreSelectStatus @cost(weight: "10")
+  neq: HeightPreSelectStatus @cost(weight: "10")
+  in: [HeightPreSelectStatus!] @cost(weight: "10")
+  nin: [HeightPreSelectStatus!] @cost(weight: "10")
+}
+
+input ISiteContractFilterInput {
+  and: [ISiteContractFilterInput!]
+  or: [ISiteContractFilterInput!]
+  "Required: The ERP ID associated with the rental contract, used to uniquely identify the contract within the ERP system."
+  erpId: StringOperationFilterInput
+  "Required: The plan (Basic or Explorer) associated with the I_Site contract."
+  contractPlan: ContractPlanTypeOperationFilterInput
+  "Required: The ID of the customer or department that is responsible for paying the I_Site contract."
+  paidById: UuidOperationFilterInput
+  "Required: The type of entity(customer or department) that is responsible for paying the I_Site contract."
+  paidByType: PayerOfTypeOperationFilterInput
+  "Required: The start date for the I_Site contract period, indicating when the contract begins."
+  startDate: DateTimeOperationFilterInput
+  "Required: The end date for the I_Site contract period, indicating when the contract ends."
+  endDate: DateTimeOperationFilterInput
+}
+
+input ISiteContractInput {
+  "Required: The ERP ID associated with the rental contract, used to uniquely identify the contract within the ERP system."
+  erpId: String!
+  "Required: The plan (Basic or Explorer) associated with the I_Site contract."
+  contractPlan: ContractPlanType!
+  "Required: The ID of the customer or department that is responsible for paying the I_Site contract."
+  paidById: UUID!
+  "Required: The type of entity(customer or department) that is responsible for paying the I_Site contract."
+  paidByType: PayerOfType!
+  "Required: The start date for the I_Site contract period, indicating when the contract begins."
+  startDate: DateTime!
+  "Required: The end date for the I_Site contract period, indicating when the contract ends."
+  endDate: DateTime!
+}
+
+input ISiteContractSortInput {
+  "Required: The ERP ID associated with the rental contract, used to uniquely identify the contract within the ERP system."
+  erpId: SortEnumType @cost(weight: "10")
+  "Required: The plan (Basic or Explorer) associated with the I_Site contract."
+  contractPlan: SortEnumType @cost(weight: "10")
+  "Required: The ID of the customer or department that is responsible for paying the I_Site contract."
+  paidById: SortEnumType @cost(weight: "10")
+  "Required: The type of entity(customer or department) that is responsible for paying the I_Site contract."
+  paidByType: SortEnumType @cost(weight: "10")
+  "Required: The start date for the I_Site contract period, indicating when the contract begins."
+  startDate: SortEnumType @cost(weight: "10")
+  "Required: The end date for the I_Site contract period, indicating when the contract ends."
+  endDate: SortEnumType @cost(weight: "10")
+}
+
+input IntOperationFilterInput {
+  eq: Int @cost(weight: "10")
+  neq: Int @cost(weight: "10")
+  in: [Int] @cost(weight: "10")
+  nin: [Int] @cost(weight: "10")
+  gt: Int @cost(weight: "10")
+  ngt: Int @cost(weight: "10")
+  gte: Int @cost(weight: "10")
+  ngte: Int @cost(weight: "10")
+  lt: Int @cost(weight: "10")
+  nlt: Int @cost(weight: "10")
+  lte: Int @cost(weight: "10")
+  nlte: Int @cost(weight: "10")
+}
+
+input LongOperationFilterInput {
+  eq: Long @cost(weight: "10")
+  neq: Long @cost(weight: "10")
+  in: [Long] @cost(weight: "10")
+  nin: [Long] @cost(weight: "10")
+  gt: Long @cost(weight: "10")
+  ngt: Long @cost(weight: "10")
+  gte: Long @cost(weight: "10")
+  ngte: Long @cost(weight: "10")
+  lt: Long @cost(weight: "10")
+  nlt: Long @cost(weight: "10")
+  lte: Long @cost(weight: "10")
+  nlte: Long @cost(weight: "10")
+}
+
+input MachineCreateInput {
+  erpId: String
+  serialNumber: String!
+  familyCode: FamilyCode
+  name: String
+  siteId: UUID!
+  brandCode: String!
+  model: String
+  typeOfOwnership: TypeOfOwnership
+  energy: Energy
+  fleetNo: String
+  yearModel: Int
+  liftCapacity: Int
+  rentalContract: RentalContractInput
+  iSiteContract: ISiteContractInput
+  status: Boolean!
+  deleted: Boolean
+}
+
+"Represents a machine with various attributes such as unique identifiers, serial number, communication details, metrics, settings, and ownership information."
+input MachineFilterInput {
+  and: [MachineFilterInput!]
+  or: [MachineFilterInput!]
+  "Required: The serial number of the machine. It must be unique within the I_site."
+  serialNumber: StringOperationFilterInput
+  "Optional: The TcsPackageVersion, which consists of a base number (e.g., 1234567) followed by a hyphen and a three-digit extension (e.g., 001)."
+  tcsPackageVersion: StringOperationFilterInput
+  "The timestamp of the machine's last communication, in UTC."
+  latestCommunication: DateTimeOperationFilterInput
+  "Optional: Holds the latest metrics from the machine. This property is updated automatically by the machine."
+  latestMetrics: MachineMetricsModelFilterInput
+  """
+  Optional: The type of machine, represented by a predefined set of codes. The FamilyCode indicates the machine family and must be one of the following predefined codes:
+  Cbi - CB IC
+  Cbe - CB Electric
+  Sta - Stackers
+  Pic - Order Pickers
+  Vna - VNA Trucks
+  Rea - Reach Trucks
+  Low - Low Lifters
+  Tow - Tow Tractors
+  Han - Hand Pallet Trucks
+  Oth - Other equipment
+  """
+  familyCode: NullableOfFamilyCodeOperationFilterInput
+  "Optional: Settings for automatic Height Pre-Select (HPS). This function allows setting a defined stop height before lifting or lowering, making the forks stop at the defined height automatically."
+  heightPreSelect: HeightPreSelectFilterInput
+  "Optional: Indicates whether the Operator should be included in the data sent from DHU to the cloud."
+  includeOperatorInActivities: BooleanOperationFilterInput
+  "Optional: The name of the machine. If the Name is not provided, the SerialNumber will be used instead."
+  name: StringOperationFilterInput
+  "The brand of the machine, represented by a pre-defined code. The code needs to match an existing Brands code in I_site."
+  brand: BrandFilterInput
+  "The model of the machine. This property specifies the machine's model name."
+  model: StringOperationFilterInput
+  "Represents the unique identifier for the site."
+  siteId: UuidOperationFilterInput
+  "Indicates whether the machine is active in the ERP system. This is a boolean value used by ERP to determine the machine's status."
+  status: BooleanOperationFilterInput
+  "Optional: The Data Handling Unit (DHU) associated with this entity. By default, this is set to false. It should be updated by I_site."
+  dhu: DataHandlingUnitFilterInput
+  "Optional: The type of energy used by the machine. This indicates whether the machine uses (Diesel), (Electric), (LPGPetrol,), or if the energy type is not available(NotAvailable)."
+  energy: NullableOfEnergyOperationFilterInput
+  "Optional: The customer-assigned name for the machine."
+  fleetNo: StringOperationFilterInput
+  "Optional: The year model of the machine. If not specified, this can be null. However, if the year model is not set or is negative, it is considered as -1."
+  yearModel: IntOperationFilterInput
+  "Optional: The lift capacity of the machine. If not specified, this can be null. However, if the lift capacity is not set or is negative, it is considered as -1."
+  liftCapacity: IntOperationFilterInput
+  "Optional: The type of ownership for the machine. This indicates whether the machine is owned by others(OTHERS), rented for a short term(SHORT_TERM_RENTAL), rented for a long term (LONG_TERM_RENTAL), owned by a customer(CUSTOMER_OWNED), or used as a demo (DEMO)."
+  typeOfOwnership: NullableOfTypeOfOwnershipOperationFilterInput
+  "Optional: The contract associated with TypeOfOwnership set to LongTermRental, providing detailed terms and conditions. If TypeOfOwnership is not LongTermRental, this should be null."
+  rentalContract: RentalContractFilterInput
+  "The timestamp of the most recent modification to the machine document."
+  lastUpdatedUtc: DateTimeOperationFilterInput
+  "Optional: Details the customer's I_Site subscription, including the plan (Basic or Explorer), purchaser information, and an ERP system contract ID for traceability."
+  iSiteContract: ISiteContractFilterInput
+  "The unique identifier of the {className}."
+  id: UuidOperationFilterInput
+  "Optional: A unique identifier of the {className} in the ERP system."
+  erpId: StringOperationFilterInput
+}
+
+input MachineMetricsModelFilterInput {
+  and: [MachineMetricsModelFilterInput!]
+  or: [MachineMetricsModelFilterInput!]
+  "A-time (Key-On): The total hours the truck’s starter key is switched to the on position."
+  aHours: LongOperationFilterInput
+  "B-time (Driving, Lifting or other Hydraulics): The total hours any of the truck’s motors (including steering servo) are active."
+  bHours: LongOperationFilterInput
+  "C-time (Driving): The total hours the truck has been driven."
+  cHours: LongOperationFilterInput
+  "D-time (Lifting): The total hours the truck's lift motor has been active."
+  dHours: LongOperationFilterInput
+  "E-time (Ergo\/Initial\/T-Mote): Used for different purposes on different machines—RRE: Ergo cabin tilt active hours, VCE: Initial lift active hours, OSE: T-Mote active hours."
+  eHours: LongOperationFilterInput
+  "F-time (Operator presence\/availability time): The total hours the truck operator is present."
+  fHours: LongOperationFilterInput
+  "S-time (Service): Time remaining until the next service. Can be negative if service is overdue."
+  sHours: LongOperationFilterInput
+}
+
+input MachineMetricsModelSortInput {
+  "A-time (Key-On): The total hours the truck’s starter key is switched to the on position."
+  aHours: SortEnumType @cost(weight: "10")
+  "B-time (Driving, Lifting or other Hydraulics): The total hours any of the truck’s motors (including steering servo) are active."
+  bHours: SortEnumType @cost(weight: "10")
+  "C-time (Driving): The total hours the truck has been driven."
+  cHours: SortEnumType @cost(weight: "10")
+  "D-time (Lifting): The total hours the truck's lift motor has been active."
+  dHours: SortEnumType @cost(weight: "10")
+  "E-time (Ergo\/Initial\/T-Mote): Used for different purposes on different machines—RRE: Ergo cabin tilt active hours, VCE: Initial lift active hours, OSE: T-Mote active hours."
+  eHours: SortEnumType @cost(weight: "10")
+  "F-time (Operator presence\/availability time): The total hours the truck operator is present."
+  fHours: SortEnumType @cost(weight: "10")
+  "S-time (Service): Time remaining until the next service. Can be negative if service is overdue."
+  sHours: SortEnumType @cost(weight: "10")
+}
+
+"Represents a machine with various attributes such as unique identifiers, serial number, communication details, metrics, settings, and ownership information."
+input MachineSortInput {
+  "Required: The serial number of the machine. It must be unique within the I_site."
+  serialNumber: SortEnumType @cost(weight: "10")
+  "Optional: The TcsPackageVersion, which consists of a base number (e.g., 1234567) followed by a hyphen and a three-digit extension (e.g., 001)."
+  tcsPackageVersion: SortEnumType @cost(weight: "10")
+  "The timestamp of the machine's last communication, in UTC."
+  latestCommunication: SortEnumType @cost(weight: "10")
+  "Optional: Holds the latest metrics from the machine. This property is updated automatically by the machine."
+  latestMetrics: MachineMetricsModelSortInput @cost(weight: "10")
+  """
+  Optional: The type of machine, represented by a predefined set of codes. The FamilyCode indicates the machine family and must be one of the following predefined codes:
+  Cbi - CB IC
+  Cbe - CB Electric
+  Sta - Stackers
+  Pic - Order Pickers
+  Vna - VNA Trucks
+  Rea - Reach Trucks
+  Low - Low Lifters
+  Tow - Tow Tractors
+  Han - Hand Pallet Trucks
+  Oth - Other equipment
+  """
+  familyCode: SortEnumType @cost(weight: "10")
+  "Optional: Settings for automatic Height Pre-Select (HPS). This function allows setting a defined stop height before lifting or lowering, making the forks stop at the defined height automatically."
+  heightPreSelect: HeightPreSelectSortInput @cost(weight: "10")
+  "Optional: Indicates whether the Operator should be included in the data sent from DHU to the cloud."
+  includeOperatorInActivities: SortEnumType @cost(weight: "10")
+  "Optional: The name of the machine. If the Name is not provided, the SerialNumber will be used instead."
+  name: SortEnumType @cost(weight: "10")
+  "The brand of the machine, represented by a pre-defined code. The code needs to match an existing Brands code in I_site."
+  brand: BrandSortInput @cost(weight: "10")
+  "The model of the machine. This property specifies the machine's model name."
+  model: SortEnumType @cost(weight: "10")
+  "Represents the unique identifier for the site."
+  siteId: SortEnumType @cost(weight: "10")
+  "Indicates whether the machine is active in the ERP system. This is a boolean value used by ERP to determine the machine's status."
+  status: SortEnumType @cost(weight: "10")
+  "Optional: The Data Handling Unit (DHU) associated with this entity. By default, this is set to false. It should be updated by I_site."
+  dhu: DataHandlingUnitSortInput @cost(weight: "10")
+  "Optional: The type of energy used by the machine. This indicates whether the machine uses (Diesel), (Electric), (LPGPetrol,), or if the energy type is not available(NotAvailable)."
+  energy: SortEnumType @cost(weight: "10")
+  "Optional: The customer-assigned name for the machine."
+  fleetNo: SortEnumType @cost(weight: "10")
+  "Optional: The year model of the machine. If not specified, this can be null. However, if the year model is not set or is negative, it is considered as -1."
+  yearModel: SortEnumType @cost(weight: "10")
+  "Optional: The lift capacity of the machine. If not specified, this can be null. However, if the lift capacity is not set or is negative, it is considered as -1."
+  liftCapacity: SortEnumType @cost(weight: "10")
+  "Optional: The type of ownership for the machine. This indicates whether the machine is owned by others(OTHERS), rented for a short term(SHORT_TERM_RENTAL), rented for a long term (LONG_TERM_RENTAL), owned by a customer(CUSTOMER_OWNED), or used as a demo (DEMO)."
+  typeOfOwnership: SortEnumType @cost(weight: "10")
+  "Optional: The contract associated with TypeOfOwnership set to LongTermRental, providing detailed terms and conditions. If TypeOfOwnership is not LongTermRental, this should be null."
+  rentalContract: RentalContractSortInput @cost(weight: "10")
+  "The timestamp of the most recent modification to the machine document."
+  lastUpdatedUtc: SortEnumType @cost(weight: "10")
+  "Optional: Details the customer's I_Site subscription, including the plan (Basic or Explorer), purchaser information, and an ERP system contract ID for traceability."
+  iSiteContract: ISiteContractSortInput @cost(weight: "10")
+  "The unique identifier of the {className}."
+  id: SortEnumType @cost(weight: "10")
+  "Optional: A unique identifier of the {className} in the ERP system."
+  erpId: SortEnumType @cost(weight: "10")
+}
+
+input MachineUpdateInput {
+  id: UUID!
+  erpId: String
+  serialNumber: String
+  familyCode: FamilyCode
+  name: String
+  siteId: UUID
+  brandCode: String
+  model: String
+  typeOfOwnership: TypeOfOwnership
+  energy: Energy
+  fleetNo: String
+  yearModel: Int
+  liftCapacity: Int
+  rentalContract: RentalContractInput
+  iSiteContract: ISiteContractInput
+  status: Boolean
+  deleted: Boolean
+}
+
+input NullableOfEnergyOperationFilterInput {
+  eq: Energy @cost(weight: "10")
+  neq: Energy @cost(weight: "10")
+  in: [Energy] @cost(weight: "10")
+  nin: [Energy] @cost(weight: "10")
+}
+
+input NullableOfFamilyCodeOperationFilterInput {
+  eq: FamilyCode @cost(weight: "10")
+  neq: FamilyCode @cost(weight: "10")
+  in: [FamilyCode] @cost(weight: "10")
+  nin: [FamilyCode] @cost(weight: "10")
+}
+
+input NullableOfTypeOfOwnershipOperationFilterInput {
+  eq: TypeOfOwnership @cost(weight: "10")
+  neq: TypeOfOwnership @cost(weight: "10")
+  in: [TypeOfOwnership] @cost(weight: "10")
+  nin: [TypeOfOwnership] @cost(weight: "10")
+}
+
+input PayerOfTypeOperationFilterInput {
+  eq: PayerOfType @cost(weight: "10")
+  neq: PayerOfType @cost(weight: "10")
+  in: [PayerOfType!] @cost(weight: "10")
+  nin: [PayerOfType!] @cost(weight: "10")
+}
+
+input RentalContractFilterInput {
+  and: [RentalContractFilterInput!]
+  or: [RentalContractFilterInput!]
+  "Required: The ERP ID associated with the rental contract, used to uniquely identify the contract within the ERP system."
+  erpId: StringOperationFilterInput
+  "Required: The start date for the rental contract period, indicating when the rental agreement begins."
+  startDate: DateTimeOperationFilterInput
+  "Required: The end date for the rental contract period, indicating when the rental agreement ends."
+  endDate: DateTimeOperationFilterInput
+  "Required: The amount of hours the truck is expected to be used during the rental contract period."
+  quantity: IntOperationFilterInput
+}
+
+input RentalContractInput {
+  "Required: The ERP ID associated with the rental contract, used to uniquely identify the contract within the ERP system."
+  erpId: String!
+  "Required: The start date for the rental contract period, indicating when the rental agreement begins."
+  startDate: DateTime!
+  "Required: The end date for the rental contract period, indicating when the rental agreement ends."
+  endDate: DateTime!
+  "Required: The amount of hours the truck is expected to be used during the rental contract period."
+  quantity: Int!
+}
+
+input RentalContractSortInput {
+  "Required: The ERP ID associated with the rental contract, used to uniquely identify the contract within the ERP system."
+  erpId: SortEnumType @cost(weight: "10")
+  "Required: The start date for the rental contract period, indicating when the rental agreement begins."
+  startDate: SortEnumType @cost(weight: "10")
+  "Required: The end date for the rental contract period, indicating when the rental agreement ends."
+  endDate: SortEnumType @cost(weight: "10")
+  "Required: The amount of hours the truck is expected to be used during the rental contract period."
+  quantity: SortEnumType @cost(weight: "10")
+}
+
+input SetHpsInput {
+  machineId: ID!
+  hps: HeightPreSelectSettingsInput!
+}
+
+input SiteCreateInput {
+  customerId: UUID!
+  siteNumber: String
+  erpId: String
+  name: String!
+  postalCode: String
+  city: String
+  street: String
+  countryCode: String!
+  timeZone: String!
+  active: Boolean
+  deleted: Boolean
+}
+
+"Represents a specific warehouse site with various attributes such as unique identifiers, customer association, location details, and optional ERP system identifiers."
+input SiteFilterInput {
+  and: [SiteFilterInput!]
+  or: [SiteFilterInput!]
+  "Required: A unique identifier for the customer."
+  customerId: UuidOperationFilterInput
+  "Optional: The site number, which is an optional identifier for the site."
+  siteNumber: StringOperationFilterInput
+  "Required: The name of the site."
+  name: StringOperationFilterInput
+  "Optional: The postal address of a site."
+  address: AddressFilterInput
+  "Optional: The time zone of the site. For example, 'W. Europe Standard Time'."
+  timeZone: StringOperationFilterInput
+  "The unique identifier of the {className}."
+  id: UuidOperationFilterInput
+  "Optional: A unique identifier of the {className} in the ERP system."
+  erpId: StringOperationFilterInput
+}
+
+"Represents a specific warehouse site with various attributes such as unique identifiers, customer association, location details, and optional ERP system identifiers."
+input SiteSortInput {
+  "Required: A unique identifier for the customer."
+  customerId: SortEnumType @cost(weight: "10")
+  "Optional: The site number, which is an optional identifier for the site."
+  siteNumber: SortEnumType @cost(weight: "10")
+  "Required: The name of the site."
+  name: SortEnumType @cost(weight: "10")
+  "Optional: The postal address of a site."
+  address: AddressSortInput @cost(weight: "10")
+  "Optional: The time zone of the site. For example, 'W. Europe Standard Time'."
+  timeZone: SortEnumType @cost(weight: "10")
+  "The unique identifier of the {className}."
+  id: SortEnumType @cost(weight: "10")
+  "Optional: A unique identifier of the {className} in the ERP system."
+  erpId: SortEnumType @cost(weight: "10")
+}
+
+input SiteUpdateInput {
+  id: UUID!
+  customerId: UUID
+  siteNumber: String
+  erpId: String
+  name: String
+  postalCode: String
+  city: String
+  street: String
+  countryCode: String
+  timeZone: String
+  active: Boolean
+  deleted: Boolean
+}
+
+input StringOperationFilterInput {
+  and: [StringOperationFilterInput!]
+  or: [StringOperationFilterInput!]
+  eq: String @cost(weight: "10")
+  neq: String @cost(weight: "10")
+  contains: String @cost(weight: "20")
+  ncontains: String @cost(weight: "20")
+  in: [String] @cost(weight: "10")
+  nin: [String] @cost(weight: "10")
+  startsWith: String @cost(weight: "20")
+  nstartsWith: String @cost(weight: "20")
+  endsWith: String @cost(weight: "20")
+  nendsWith: String @cost(weight: "20")
+}
+
+input UpdateCustomerInput {
+  customer: CustomerUpdateInput!
+}
+
+input UpdateCustomersInput {
+  customers: [CustomerUpdateInput!]!
+}
+
+input UpdateDepartmentInput {
+  department: DepartmentUpdateInput!
+}
+
+input UpdateDepartmentsInput {
+  departmentUpdates: [DepartmentUpdateInput!]!
+}
+
+input UpdateErpIdInput {
+  machineId: ID!
+  erpId: String!
+}
+
+input UpdateMachineInput {
+  machineUpdate: MachineUpdateInput!
+}
+
+input UpdateMachinesInput {
+  machineUpdates: [MachineUpdateInput!]!
+}
+
+input UpdateSiteInput {
+  site: SiteUpdateInput!
+}
+
+input UpdateSitesInput {
+  sites: [SiteUpdateInput!]!
+}
+
+input UuidOperationFilterInput {
+  eq: UUID @cost(weight: "10")
+  neq: UUID @cost(weight: "10")
+  in: [UUID] @cost(weight: "10")
+  nin: [UUID] @cost(weight: "10")
+  gt: UUID @cost(weight: "10")
+  ngt: UUID @cost(weight: "10")
+  gte: UUID @cost(weight: "10")
+  ngte: UUID @cost(weight: "10")
+  lt: UUID @cost(weight: "10")
+  nlt: UUID @cost(weight: "10")
+  lte: UUID @cost(weight: "10")
+  nlte: UUID @cost(weight: "10")
+}
+
+"Defines when a policy shall be executed."
+enum ApplyPolicy {
+  "Before the resolver was executed."
+  BEFORE_RESOLVER
+  "After the resolver was executed."
+  AFTER_RESOLVER
+  "The policy is applied in the validation step before the execution."
+  VALIDATION
+}
+
+enum ContractPlanType {
+  BASIC
+  EXPLORER
+}
+
+enum DepartmentType {
+  INTERNAL
+  MARKET
+}
+
+enum DhuType {
+  DHU1
+  DHU2
+  DHU2_PLUS
+  DHU3
+  DHU4
+  NOT_AVAILABLE
+}
+
+enum Energy {
+  DIESEL
+  ELECTRIC
+  LPG_PETROL
+  NOT_AVAILABLE
+}
+
+enum FamilyCode {
+  CBI
+  CBE
+  STA
+  PIC
+  VNA
+  REA
+  LOW
+  TOW
+  HAN
+  OTH
+  NOT_AVAILABLE
+}
+
+enum HeightPreSelectJobType {
+  "Picking up materials (aka fetching\/retrieving\/collecting goods\/pallets\/packages). Gives a hint to the machine that HPS should enter the pickup location at the MIN height and exit at the MAX height."
+  PICKUP
+  "Depositing materials (aka leaving\/putting\/placing\/storing goods\/pallets\/packages). Gives a hint to the machine that HPS should enter the deposit location at the MAX height and exit at the MIN height."
+  DEPOSIT
+  "Manually picking orders. HPS will lift to the MIN height."
+  ORDER_PICKING
+}
+
+enum HeightPreSelectStatus {
+  "The HPS job is pending and has not been processed yet."
+  PENDING
+  "The HPS job has been received by the machine and made available for the operator to use."
+  RECEIVED_BY_MACHINE
+  "The HPS job has been accepted by the operator."
+  ACCEPTED_BY_OPERATOR
+  "The HPS job has not been accepted by the operator within time."
+  IGNORED_BY_OPERATOR
+  "The HPS job has been actively rejected by the operator."
+  REJECTED_BY_OPERATOR
+  "The HPS job has been completed."
+  COMPLETED
+  "The HPS job has failed."
+  FAILED
+}
+
+enum PayerOfType {
+  CUSTOMER
+  DEPARTMENT
+}
+
+enum SortEnumType {
+  ASC
+  DESC
+}
+
+enum TypeOfOwnership {
+  OTHERS
+  SHORT_TERM_RENTAL
+  LONG_TERM_RENTAL
+  CUSTOMER_OWNED
+  DEMO
+}
+
+"The authorize directive."
+directive @authorize("The name of the authorization policy that determines access to the annotated resource." policy: String "Roles that are allowed to access the annotated resource." roles: [String!] "Defines when when the authorize directive shall be applied.By default the authorize directives are applied during the validation phase." apply: ApplyPolicy! = BEFORE_RESOLVER) repeatable on OBJECT | FIELD_DEFINITION
+
+"The purpose of the `cost` directive is to define a `weight` for GraphQL types, fields, and arguments. Static analysis can use these weights when calculating the overall cost of a query or response."
+directive @cost("The `weight` argument defines what value to add to the overall cost for every appearance, or possible appearance, of a type, field, argument, etc." weight: String!) on SCALAR | OBJECT | FIELD_DEFINITION | ARGUMENT_DEFINITION | ENUM | INPUT_FIELD_DEFINITION
+
+"The purpose of the `@listSize` directive is to either inform the static analysis about the size of returned lists (if that information is statically available), or to point the analysis to where to find that information."
+directive @listSize("The `assumedSize` argument can be used to statically define the maximum length of a list returned by a field." assumedSize: Int "The `slicingArguments` argument can be used to define which of the field's arguments with numeric type are slicing arguments, so that their value determines the size of the list returned by that field. It may specify a list of multiple slicing arguments." slicingArguments: [String!] "The `slicingArgumentDefaultValue` argument can be used to define a default value for a slicing argument, which is used if the argument is not present in a query." slicingArgumentDefaultValue: Int "The `sizedFields` argument can be used to define that the value of the `assumedSize` argument or of a slicing argument does not affect the size of a list returned by a field itself, but that of a list returned by one of its sub-fields." sizedFields: [String!] "The `requireOneSlicingArgument` argument can be used to inform the static analysis that it should expect that exactly one of the defined slicing arguments is present in a query. If that is not the case (i.e., if none or multiple slicing arguments are present), the static analysis may throw an error." requireOneSlicingArgument: Boolean! = true) on FIELD_DEFINITION
+
+"The `@specifiedBy` directive is used within the type system definition language to provide a URL for specifying the behavior of custom scalar definitions."
+directive @specifiedBy("The specifiedBy URL points to a human-readable specification. This field will only read a result for scalar types." url: String!) on SCALAR
+
+"The `DateTime` scalar represents an ISO-8601 compliant date time type."
+scalar DateTime @specifiedBy(url: "https:\/\/www.graphql-scalars.com\/date-time")
+
+"The `Long` scalar type represents non-fractional signed whole 64-bit numeric values. Long can represent values between -(2^63) and 2^63 - 1."
+scalar Long
+
+scalar UUID @specifiedBy(url: "https:\/\/tools.ietf.org\/html\/rfc4122")
