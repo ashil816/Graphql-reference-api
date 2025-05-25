@@ -8,7 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import CodeBlock from '@/components/ui/code-block';
-import { SchemaField, FieldArgument, ParsedSchema, EnumTypeInfo } from '@/lib/graphql/schema-parser'; // Assuming these types are exported
+import { SchemaField, SchemaFieldArgument, ParsedSchema, EnumTypeInfo } from '@/lib/graphql/schema-parser'; // Assuming these types are exported
 
 interface InteractiveExplorerProps {
   field: SchemaField;
@@ -18,7 +18,7 @@ interface InteractiveExplorerProps {
 }
 
 // Mock GraphQL client
-const mockGraphQLClient = async (query: string, variables: Record<string, any>): Promise<any> => {
+const mockGraphQLClient = async (query: string, variables: Record<string, any>, field: SchemaField): Promise<any> => {
   console.log("Executing Query:\n", query);
   console.log("Variables:", variables);
   await new Promise(resolve => setTimeout(resolve, 300)); // Simulate network delay
@@ -125,7 +125,7 @@ const InteractiveExplorer: React.FC<InteractiveExplorerProps> = ({ field, parent
     const query = buildGraphQLQuery(operationTypeString, operationName, field, argValues, schema);
     
     try {
-      const result = await mockGraphQLClient(query, argValues);
+      const result = await mockGraphQLClient(query, argValues, field);
       setResponse(JSON.stringify(result, null, 2));
     } catch (err) {
       setResponse(JSON.stringify({ error: (err as Error).message }, null, 2));

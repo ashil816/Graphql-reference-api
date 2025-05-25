@@ -1,10 +1,11 @@
-import { loadAndParseSchema, ParsedSchema, Field as SchemaField, FieldArgument as SchemaFieldArgument, DirectiveInfo, ObjectTypeInfo, InterfaceTypeInfo, ScalarTypeInfo, EnumTypeInfo } from '@/lib/graphql/schema-parser';
+import { loadAndParseSchema, ParsedSchema, SchemaField, SchemaFieldArgument, DirectiveInfo, ObjectTypeInfo, InterfaceTypeInfo, ScalarTypeInfo, EnumTypeInfo } from '@/lib/graphql/schema-parser';
 import CodeBlock from '@/components/ui/code-block';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ExternalLink } from 'lucide-react';
+import InteractiveExplorer from '@/components/layout/interactive-explorer';
 
 interface FieldPageProps {
   params: {
@@ -249,31 +250,10 @@ export default async function FieldDetailPage({ params }: FieldPageProps) {
           <div className="space-y-4 rounded-md border border-border p-4 bg-card/50">
             {field.args.map((arg: SchemaFieldArgument, index) => (
               <div key={arg.name} className={`pb-3 ${index < field.args.length - 1 ? 'border-b border-border/20' : ''}`}>
-                <div className="flex items-center mb-1">
-                  <span className="font-semibold text-foreground mr-2 font-mono">{arg.name}</span>: 
-                  <span className="ml-1"><RenderTypeLink typeString={arg.type} schema={schema} /></span>
-                   {arg.type.endsWith('!') && <span className="text-red-500 ml-1 text-xs">(required)</span>}
-                </div>
-                {arg.description && <p className="text-sm text-muted-foreground ml-1">{arg.description}</p>}
-                {arg.defaultValue !== null && arg.defaultValue !== undefined && (
-                  <p className="text-sm text-gray-400 mt-1 ml-1">Default: <code className="text-xs bg-neutral-700 p-0.5 rounded">{String(arg.defaultValue)}</code></p>
-                )}
-                {arg.directives && arg.directives.length > 0 && (
-                  <div className="mt-2 ml-1">
-                    <span className="text-xs text-muted-foreground">Directives: </span>
-                    {arg.directives.map(dir => (
-                      <Badge key={dir.name} variant="outline" className="mr-1 text-xs bg-neutral-700 border-neutral-600 text-neutral-300">
-                        @{dir.name}
-                        {Object.keys(dir.args).length > 0 && (
-                          <span>({Object.entries(dir.args).map(([key, value]) => `${key}: ${JSON.stringify(value)}`).join(', ')})</span>
-                        )}
-                      </Badge>
-                    ))}
-                  </div>
-                )}
+                <span className="font-semibold text-foreground mr-2 font-mono">{arg.name}</span>
               </div>
             ))}
-          </ul>
+          </div>
         </div>
       )}
       {field.args.length === 0 && (
@@ -283,13 +263,12 @@ export default async function FieldDetailPage({ params }: FieldPageProps) {
          </div>
       )}
 
-
       {field.directives && field.directives.length > 0 && (
         <div className="my-6">
           <h2 className="text-2xl font-semibold mb-3">Directives</h2>
           <div className="flex flex-wrap gap-2">
             {field.directives.map(dir => (
-              <Badge key={dir.name} variant="outline" className="text-xs bg-neutral-700 border-neutral-600 text-neutral-300">
+              <Badge key={dir.name} variant="outline" className="mr-1 text-xs bg-neutral-700 border-neutral-600 text-neutral-300">
                 @{dir.name}
                 {Object.keys(dir.args).length > 0 && (
                   <span>({Object.entries(dir.args).map(([key, value]) => `${key}: ${JSON.stringify(value)}`).join(', ')})</span>
@@ -312,7 +291,6 @@ export default async function FieldDetailPage({ params }: FieldPageProps) {
           <InteractiveExplorer field={field} parentName={parentName} parentTypeCategory={parentTypeCategory as ('query' | 'mutation')} schema={schema} />
         </>
       )}
-
     </article>
   );
 }

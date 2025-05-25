@@ -1,4 +1,4 @@
-import { loadAndParseSchema, ParsedSchema, ObjectTypeInfo, InputObjectTypeInfo, EnumTypeInfo, ScalarTypeInfo, Field as SchemaField, InputField as SchemaInputField, EnumValue as SchemaEnumValue, DirectiveInfo, InterfaceTypeInfo, UnionTypeInfo } from '@/lib/graphql/schema-parser';
+import { loadAndParseSchema, ParsedSchema, ObjectTypeInfo, InputObjectTypeInfo, EnumTypeInfo, ScalarTypeInfo, SchemaField, SchemaInputField, SchemaEnumValue, DirectiveInfo, InterfaceTypeInfo, UnionTypeInfo } from '@/lib/graphql/schema-parser';
 import CodeBlock from '@/components/ui/code-block';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
@@ -74,7 +74,10 @@ function generateTypeSignature(item: ObjectTypeInfo | InputObjectTypeInfo | Enum
     case 'interfaces': // Added interfaces here
       const typeItem = item as ObjectTypeInfo | InterfaceTypeInfo;
       const typeKeyword = itemType === 'interfaces' ? 'interface' : 'type';
-      const implementsInterfaces = (typeItem as ObjectTypeInfo).interfaces?.length > 0 ? ` implements ${ (typeItem as ObjectTypeInfo).interfaces!.join(' & ')}` : '';
+      let implementsInterfaces = '';
+      if (typeItem.interfaces && typeItem.interfaces.length > 0) {
+        implementsInterfaces = ` implements ${typeItem.interfaces.join(' & ')}`;
+      }
       
       const typeFields = typeItem.fields.map(f => {
         const argsString = f.args.length > 0 ? `(${f.args.map(arg => `${arg.name}: ${arg.type}${arg.defaultValue ? ` = ${JSON.stringify(arg.defaultValue)}` : ''}`).join(', ')})` : '';

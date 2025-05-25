@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/accordion';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useEffect, useState, useMemo } from 'react';
-import { loadAndParseSchema, ParsedSchema, Field, InputField, EnumValue, ScalarTypeInfo, ObjectTypeInfo } from '@/lib/graphql/schema-parser'; // Assuming types are exported
+import { loadAndParseSchema, ParsedSchema, SchemaField, SchemaInputField, SchemaEnumValue, ScalarTypeInfo, ObjectTypeInfo, InputObjectTypeInfo } from '@/lib/graphql/schema-parser'; 
 
 const Sidebar = () => {
   const pathname = usePathname();
@@ -41,7 +41,6 @@ const Sidebar = () => {
   const filteredSchema = useMemo(() => {
     if (!schema) return null;
     if (!searchTerm.trim()) {
-      // When no search term, determine open accordions based on current path
       const currentOpen: string[] = [];
       if (schema.queryType && pathname.startsWith(`/docs/query/${schema.queryType.name}`)) currentOpen.push(schema.queryType.name);
       if (schema.mutationType && pathname.startsWith(`/docs/mutation/${schema.mutationType.name}`)) currentOpen.push(schema.mutationType.name);
@@ -65,41 +64,45 @@ const Sidebar = () => {
       return items.filter(item => item.name.toLowerCase().includes(lowerSearchTerm));
     };
     
-    const filterFields = (fields: (Field | InputField)[]) => 
+    // Generic filter for fields that can be SchemaField or SchemaInputField
+    const filterFieldsUnion = (fields: (SchemaField | SchemaInputField)[]) => 
+      fields.filter(field => field.name.toLowerCase().includes(lowerSearchTerm));
+
+    // Specific filter for SchemaField[]
+    const filterSchemaFields = (fields: SchemaField[]): SchemaField[] => 
       fields.filter(field => field.name.toLowerCase().includes(lowerSearchTerm));
     
-    const processType = (type: ObjectTypeInfo | null | undefined, isRootType: boolean = false) => {
+    const processType = (type: ObjectTypeInfo | null | undefined, isRootType: boolean = false): ObjectTypeInfo | null => {
       if (!type) return null;
       const typeNameLower = type.name.toLowerCase();
-      const fields = type.fields || [];
-      const filteredFields = filterFields(fields);
+      const fields = type.fields || []; // This is SchemaField[]
+      const filteredFields = filterSchemaFields(fields); // Use specific filter
 
       if (typeNameLower.includes(lowerSearchTerm) || filteredFields.length > 0) {
         if (filteredFields.length > 0 || (isRootType && typeNameLower.includes(lowerSearchTerm))) {
           newOpenAccordions.push(type.name);
         }
-        // If the type name matches, show all fields. Otherwise, show only filtered fields.
         return { ...type, fields: typeNameLower.includes(lowerSearchTerm) ? fields : filteredFields };
       }
       return null;
     };
     
-    const objectTypes = (schema.objectTypes || []).map(type => {
-        const typeNameLower = type.name.toLowerCase();
-        const filteredFields = filterFields(type.fields);
+    const objectTypes = (schema.objectTypes || []).map(objType => { // Renamed 'type' to 'objType' to avoid conflict
+        const typeNameLower = objType.name.toLowerCase();
+        const filteredFields = filterSchemaFields(objType.fields); // Use specific filter for ObjectTypeInfo fields
         if (typeNameLower.includes(lowerSearchTerm) || filteredFields.length > 0) {
-            newOpenAccordions.push(type.name);
-            return { ...type, fields: typeNameLower.includes(lowerSearchTerm) ? type.fields : filteredFields };
+            newOpenAccordions.push(objType.name);
+            return { ...objType, fields: typeNameLower.includes(lowerSearchTerm) ? objType.fields : filteredFields };
         }
         return null;
     }).filter((item): item is ObjectTypeInfo => item !== null);
 
-    const inputObjectTypes = (schema.inputObjectTypes || []).map(type => {
-        const typeNameLower = type.name.toLowerCase();
-        const filteredFields = filterFields(type.fields);
+    const inputObjectTypes = (schema.inputObjectTypes || []).map(iotType => { // Renamed 'type' to 'iotType'
+        const typeNameLower = iotType.name.toLowerCase();
+        const filteredFields = filterFieldsUnion(iotType.fields); // Use union filter for InputObjectTypeInfo fields
         if (typeNameLower.includes(lowerSearchTerm) || filteredFields.length > 0) {
-            newOpenAccordions.push(type.name);
-            return { ...type, fields: typeNameLower.includes(lowerSearchTerm) ? type.fields : filteredFields };
+            newOpenAccordions.push(iotType.name);
+            return { ...iotType, fields: typeNameLower.includes(lowerSearchTerm) ? iotType.fields : filteredFields };
         }
         return null;
     }).filter((item): item is InputObjectTypeInfo => item !== null);
@@ -119,20 +122,20 @@ const Sidebar = () => {
 
   const isActive = (path: string) => pathname === path;
 
-  const renderFieldList = (fields: (Field | InputField)[], parentType: string, parentName: string, isInput: boolean = false) => (
+  const renderFieldList = (fields: (SchemaField | SchemaInputField)[], parentType: string, parentName: string, isInput: boolean = false) => (
     <ul className="pl-4 mt-1 space-y-0.5">
       {fields.map(field => (
         <li key={field.name}>
           <Link
-            href={`/docs/${section}/${parentName}/${field.name}`} // Link to field detail page
+            href={`/docs/${parentType}/${parentName}/${field.name}`}
             className={`block px-2 py-1 text-xs hover:text-foreground rounded-md transition-colors ${
-              isActive(`/docs/${section}/${parentName}/${field.name}`, true) 
+              isActive(`/docs/${parentType}/${parentName}/${field.name}`) 
                 ? 'text-primary font-semibold bg-muted' 
                 : 'text-muted-foreground hover:bg-accent/50'
             }`}
           >
             {field.name}
-            {!isInput && (field as Field).args && (field as Field).args.length > 0 ? '(...)' : ''}: {field.type}
+            {!isInput && (field as SchemaField).args && (field as SchemaField).args.length > 0 ? '(...)' : ''}: {field.type}
           </Link>
         </li>
       ))}
@@ -146,14 +149,12 @@ const Sidebar = () => {
     return (
       <AccordionItem value={type.name} key={type.name} className="border-b-0">
         <AccordionTrigger
-          className={`group flex items-center justify-between rounded-md px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground hover:no-underline [&[data-state=open]>svg]:rotate-180 ${isActive(sectionPath, true) ? 'font-medium text-primary bg-accent' : 'text-muted-foreground'}`}
+          className={`group flex items-center justify-between rounded-md px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground hover:no-underline [&[data-state=open]>svg]:rotate-180 ${isActive(sectionPath) ? 'font-medium text-primary bg-accent' : 'text-muted-foreground text-sm'}`}
         >
           <Link href={sectionPath} className="flex-grow text-left" onClick={(e) => {
-            // Allow navigation if not expanding/collapsing
             if ((e.target as HTMLElement).closest('.lucide-chevron-down')) {
               return;
             }
-            // For direct click on name, navigate
           }}>
             {type.name}
           </Link>
@@ -180,7 +181,7 @@ const Sidebar = () => {
     );
   }
 
-  if (error || !schema) { // Check schema here, not filteredSchema
+  if (error || !schema) { 
     return (
       <aside className="hidden md:block sticky top-14 h-[calc(100vh-3.5rem-1px)] w-full max-w-xs overflow-y-auto py-6 pr-4 border-r border-border">
         <div className="relative mb-4 pr-2">
@@ -192,7 +193,7 @@ const Sidebar = () => {
     );
   }
   
-  const displaySchema = filteredSchema || schema; // Fallback to full schema if filter returns null
+  const displaySchema = filteredSchema || schema; 
 
   return (
     <aside className="hidden md:block sticky top-14 h-[calc(100vh-3.5rem-1px)] w-full max-w-xs overflow-y-auto py-6 pr-2 border-r border-border">
@@ -231,7 +232,7 @@ const Sidebar = () => {
                 {displaySchema.objectTypes.map((type) => (
                   <AccordionItem value={type.name} key={type.name} className="border-b-0">
                     <AccordionTrigger 
-                      className={`group flex items-center justify-between rounded-md px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground hover:no-underline [&[data-state=open]>svg]:rotate-180 ${isActive(`/docs/types/${type.name}`) ? 'font-medium text-primary bg-accent' : 'text-muted-foreground'}`}
+                      className={`group flex items-center justify-between rounded-md px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground hover:no-underline [&[data-state=open]>svg]:rotate-180 ${isActive(`/docs/types/${type.name}`) ? 'font-medium text-primary bg-accent' : 'text-muted-foreground text-sm'}`}
                     >
                        <Link href={`/docs/types/${type.name}`} className="flex-grow text-left" onClick={(e) => e.stopPropagation()}>{type.name}</Link>
                        {type.fields.length > 0 && <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 text-muted-foreground group-hover:text-foreground" />}
@@ -255,7 +256,7 @@ const Sidebar = () => {
               <Accordion type="multiple" value={openAccordions} onValueChange={setOpenAccordions} className="w-full">
                 {displaySchema.inputObjectTypes.map((type) => (
                   <AccordionItem value={type.name} key={type.name} className="border-b-0">
-                    <AccordionTrigger className={`group flex items-center justify-between rounded-md px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground hover:no-underline [&[data-state=open]>svg]:rotate-180 ${isActive(`/docs/inputs/${type.name}`) ? 'font-medium text-primary bg-accent' : 'text-muted-foreground'}`}>
+                    <AccordionTrigger className={`group flex items-center justify-between rounded-md px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground hover:no-underline [&[data-state=open]>svg]:rotate-180 ${isActive(`/docs/inputs/${type.name}`) ? 'font-medium text-primary bg-accent' : 'text-muted-foreground text-sm'}`}>
                       <Link href={`/docs/inputs/${type.name}`} className="flex-grow text-left" onClick={(e) => e.stopPropagation()}>{type.name}</Link>
                       {type.fields.length > 0 && <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 text-muted-foreground group-hover:text-foreground" />}
                     </AccordionTrigger>
@@ -280,7 +281,7 @@ const Sidebar = () => {
                   <Link
                     key={type.name}
                     href={`/docs/enums/${type.name}`}
-                    className={`group flex w-full items-center rounded-md border border-transparent px-2 py-1.5 hover:bg-accent hover:text-accent-foreground transition-colors ${isActive(`/docs/enums/${type.name}`, true) ? 'font-medium text-primary bg-accent' : 'text-muted-foreground hover:bg-accent/50'}`}
+                    className={`group flex w-full items-center rounded-md border border-transparent px-2 py-1.5 hover:bg-accent hover:text-accent-foreground transition-colors ${isActive(`/docs/enums/${type.name}`) ? 'font-medium text-primary bg-accent' : 'text-muted-foreground hover:bg-accent/50 text-sm'}`}
                   >
                     {type.name}
                   </Link>
@@ -299,7 +300,7 @@ const Sidebar = () => {
                   <Link
                     key={type.name}
                     href={`/docs/scalars/${type.name}`}
-                    className={`group flex w-full items-center rounded-md border border-transparent px-2 py-1.5 hover:bg-accent hover:text-accent-foreground transition-colors ${isActive(`/docs/scalars/${type.name}`, true) ? 'font-medium text-primary bg-accent' : 'text-muted-foreground hover:bg-accent/50'}`}
+                    className={`group flex w-full items-center rounded-md border border-transparent px-2 py-1.5 hover:bg-accent hover:text-accent-foreground transition-colors ${isActive(`/docs/scalars/${type.name}`) ? 'font-medium text-primary bg-accent' : 'text-muted-foreground hover:bg-accent/50 text-sm'}`}
                   >
                     {type.name}
                   </Link>
