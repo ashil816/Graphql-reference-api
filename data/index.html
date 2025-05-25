@@ -1,0 +1,180 @@
+<html><head>
+<meta charset="utf-8"/>
+<link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect"/>
+<link as="style" href="https://fonts.googleapis.com/css2?display=swap&amp;family=Inter%3Awght%40400%3B500%3B700%3B900&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900&amp;family=Roboto+Mono%3Awght%40400%3B500%3B700" onload="this.rel='stylesheet'" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet"/>
+<title>GraphQL API Reference</title>
+<link href="data:image/x-icon;base64," rel="icon" type="image/x-icon"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style>
+    .font-mono {
+      font-family: "Roboto Mono", monospace;
+    }
+  </style>
+</head>
+<body class="bg-[#0D1117] text-white" style='font-family: Inter, "Noto Sans", sans-serif;'>
+<div class="relative flex size-full min-h-screen flex-col group/design-root overflow-x-hidden">
+<div class="flex-grow flex flex-col">
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#21262D] px-6 py-4 sticky top-0 z-50 bg-[#0D1117]/80 backdrop-blur-md">
+<div class="flex items-center gap-3">
+<div class="size-6 text-[#3d98f4]">
+<svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M42.4379 44C42.4379 44 36.0744 33.9038 41.1692 24C46.8624 12.9336 42.2078 4 42.2078 4L7.01134 4C7.01134 4 11.6577 12.932 5.96912 23.9969C0.876273 33.9029 7.27094 44 7.27094 44L42.4379 44Z" fill="currentColor"></path>
+</svg>
+</div>
+<h1 class="text-xl font-semibold leading-tight">GraphQL API Reference</h1>
+</div>
+<div class="flex items-center gap-6">
+<nav class="flex items-center gap-5">
+<a class="text-[#C9D1D9] hover:text-white text-sm font-medium leading-normal transition-colors" href="#">Overview</a>
+<a class="text-[#C9D1D9] hover:text-white text-sm font-medium leading-normal transition-colors" href="#">Authentication</a>
+<a class="text-white text-sm font-medium leading-normal border-b-2 border-[#3d98f4] pb-1" href="#">API Reference</a>
+<a class="text-[#C9D1D9] hover:text-white text-sm font-medium leading-normal transition-colors" href="#">Tutorials</a>
+<a class="text-[#C9D1D9] hover:text-white text-sm font-medium leading-normal transition-colors" href="#">Support</a>
+</nav>
+<button class="flex items-center justify-center rounded-md h-9 w-9 bg-[#21262D] text-[#C9D1D9] hover:bg-[#30363D] transition-colors">
+<span class="material-icons-outlined text-xl">help_outline</span>
+</button>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-9" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDax6dJAaSev37Z_tZSydkXOfeaycoChUqIGIqussXSBXtymw19m-9eQxstUECf8-rmyF2KhV7gwok2qL9x-7vJgpYMk4-X5gSB4OowMtIT0kDhN6JmqKs1AYoWrRPDVZ5dSgL0KsxcL5utRreSKWsCww9gHNV-r1FxFQUgtVntsgodaep7AWpSo8QZWuGkJ1OvxaSF1wyjXCEg1-lIVwBYVLCBcbkNBTm29VnLEfczwR2GKR3Tit5uQMnbakuBpVn3tzXSZmr1SIo");'></div>
+</div>
+</header>
+<main class="flex-grow grid grid-cols-[minmax(0,_3fr)_minmax(0,_2fr)] lg:grid-cols-[minmax(0,_6fr)_minmax(0,_4fr)] gap-0">
+<div class="flex flex-col overflow-y-auto border-r border-[#21262D]">
+<div class="sticky top-[73px] bg-[#0D1117] z-10 px-6 py-4 border-b border-[#21262D]">
+<label class="flex flex-col w-full">
+<div class="relative flex w-full items-center">
+<div class="absolute left-3 text-[#8B949E]" data-icon="MagnifyingGlass" data-size="20px">
+<span class="material-icons-outlined text-xl">search</span>
+</div>
+<input class="form-input w-full resize-none overflow-hidden rounded-md text-[#C9D1D9] focus:outline-none focus:ring-2 focus:ring-[#3d98f4] border border-[#30363D] bg-[#161B22] h-10 placeholder:text-[#8B949E] pl-10 pr-4 text-sm leading-normal" placeholder="Search types or fields (e.g., User, created_at)" value=""/>
+</div>
+</label>
+</div>
+<div class="px-6 py-8">
+<div class="mb-8">
+<h2 class="text-[#C9D1D9] text-sm font-semibold uppercase tracking-wider mb-3">Schema Root</h2>
+<div class="space-y-2">
+<div class="group cursor-pointer">
+<div class="flex items-center justify-between p-2 rounded-md hover:bg-[#161B22]">
+<span class="font-mono text-[#C9D1D9] text-sm">Query</span>
+<span class="material-icons-outlined text-[#8B949E] group-hover:text-white text-lg">chevron_right</span>
+</div>
+</div>
+<div class="group cursor-pointer">
+<div class="flex items-center justify-between p-2 rounded-md hover:bg-[#161B22]">
+<span class="font-mono text-[#C9D1D9] text-sm">Mutation</span>
+<span class="material-icons-outlined text-[#8B949E] group-hover:text-white text-lg">chevron_right</span>
+</div>
+</div>
+<div class="group cursor-pointer">
+<div class="flex items-center justify-between p-2 rounded-md hover:bg-[#161B22]">
+<span class="font-mono text-[#C9D1D9] text-sm">Subscription</span>
+<span class="material-icons-outlined text-[#8B949E] group-hover:text-white text-lg">chevron_right</span>
+</div>
+</div>
+</div>
+</div>
+<div>
+<h2 class="text-[#C9D1D9] text-sm font-semibold uppercase tracking-wider mb-3">Types</h2>
+<div class="space-y-2">
+<div class="group cursor-pointer">
+<div class="flex items-center justify-between p-2 rounded-md hover:bg-[#161B22]">
+<span class="font-mono text-[#C9D1D9] text-sm">User</span>
+<span class="material-icons-outlined text-[#8B949E] group-hover:text-white text-lg">chevron_right</span>
+</div>
+</div>
+<div class="group cursor-pointer">
+<div class="flex items-center justify-between p-2 rounded-md hover:bg-[#161B22] bg-[#161B22]">
+<span class="font-mono text-white text-sm">Post</span>
+<span class="material-icons-outlined text-white text-lg">expand_more</span>
+</div>
+<div class="ml-4 mt-1 pl-4 border-l border-[#30363D] space-y-1 py-1">
+<div class="flex items-center justify-between p-1.5 rounded-md hover:bg-[#21262D]">
+<span class="font-mono text-[#8B949E] text-xs">id: ID!</span>
+<span class="material-icons-outlined text-[#8B949E] hover:text-white text-sm opacity-0 group-hover:opacity-100 transition-opacity">chevron_right</span>
+</div>
+<div class="flex items-center justify-between p-1.5 rounded-md hover:bg-[#21262D] bg-[#21262D]">
+<span class="font-mono text-white text-xs">title: String!</span>
+<span class="material-icons-outlined text-white text-sm">chevron_right</span>
+</div>
+<div class="flex items-center justify-between p-1.5 rounded-md hover:bg-[#21262D]">
+<span class="font-mono text-[#8B949E] text-xs">content: String</span>
+<span class="material-icons-outlined text-[#8B949E] hover:text-white text-sm opacity-0 group-hover:opacity-100 transition-opacity">chevron_right</span>
+</div>
+<div class="flex items-center justify-between p-1.5 rounded-md hover:bg-[#21262D]">
+<span class="font-mono text-[#8B949E] text-xs">author: User!</span>
+<span class="material-icons-outlined text-[#8B949E] hover:text-white text-sm opacity-0 group-hover:opacity-100 transition-opacity">chevron_right</span>
+</div>
+</div>
+</div>
+<div class="group cursor-pointer">
+<div class="flex items-center justify-between p-2 rounded-md hover:bg-[#161B22]">
+<span class="font-mono text-[#C9D1D9] text-sm">Comment</span>
+<span class="material-icons-outlined text-[#8B949E] group-hover:text-white text-lg">chevron_right</span>
+</div>
+</div>
+<div class="group cursor-pointer">
+<div class="flex items-center justify-between p-2 rounded-md hover:bg-[#161B22]">
+<span class="font-mono text-[#C9D1D9] text-sm">Category</span>
+<span class="material-icons-outlined text-[#8B949E] group-hover:text-white text-lg">chevron_right</span>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-8">
+<h2 class="text-[#C9D1D9] text-sm font-semibold uppercase tracking-wider mb-3">Input Types</h2>
+<div class="space-y-2">
+<div class="group cursor-pointer">
+<div class="flex items-center justify-between p-2 rounded-md hover:bg-[#161B22]">
+<span class="font-mono text-[#C9D1D9] text-sm">CreatePostInput</span>
+<span class="material-icons-outlined text-[#8B949E] group-hover:text-white text-lg">chevron_right</span>
+</div>
+</div>
+<div class="group cursor-pointer">
+<div class="flex items-center justify-between p-2 rounded-md hover:bg-[#161B22]">
+<span class="font-mono text-[#C9D1D9] text-sm">UpdateUserInput</span>
+<span class="material-icons-outlined text-[#8B949E] group-hover:text-white text-lg">chevron_right</span>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-8">
+<h2 class="text-[#C9D1D9] text-sm font-semibold uppercase tracking-wider mb-3">Enums</h2>
+<div class="space-y-2">
+<div class="group cursor-pointer">
+<div class="flex items-center justify-between p-2 rounded-md hover:bg-[#161B22]">
+<span class="font-mono text-[#C9D1D9] text-sm">PostStatus</span>
+<span class="material-icons-outlined text-[#8B949E] group-hover:text-white text-lg">chevron_right</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<aside class="sticky top-[73px] h-[calc(100vh-73px)] overflow-y-auto bg-[#161B22] p-6">
+<div class="pb-5">
+<h3 class="text-xl font-semibold text-white mb-1">Post.title</h3>
+<p class="text-sm text-[#8B949E] font-mono mb-3">Type: <span class="text-[#3d98f4]">String!</span></p>
+<p class="text-[#C9D1D9] text-sm leading-relaxed">The title of the blog post. This field is required.</p>
+</div>
+<div class="py-5 border-t border-[#30363D]">
+<h4 class="text-base font-semibold text-white mb-2">Arguments</h4>
+<p class="text-sm text-[#8B949E]">This field does not accept any arguments.</p>
+</div>
+<div class="py-5 border-t border-[#30363D]">
+<h4 class="text-base font-semibold text-white mb-2">Directives</h4>
+<span class="inline-block bg-[#21262D] text-[#8B949E] text-xs font-mono px-2 py-1 rounded-full">@deprecated(reason: "Use 'newTitle' instead")</span>
+</div>
+<div class="pt-5 border-t border-[#30363D]">
+<h4 class="text-base font-semibold text-white mb-3">Example</h4>
+<pre class="bg-[#0D1117] p-3 rounded-md text-sm font-mono overflow-x-auto"><code class="text-[#C9D1D9]">query {
+  post(id: "123") {
+    <span class="text-[#3d98f4]">title</span>
+  }
+}</code></pre>
+</div>
+</aside>
+</main>
+</div>
+</div>
+</body></html>
